@@ -34,6 +34,7 @@ class testinterface(unittest.TestCase):
         global num_total,total_time,pass_rate
         num_pass=0
         num_total=0
+        val=1
         start_time = datetime.datetime.now()
         for testdata in testinterface.TestDataList:
             with self.subTest(msg=testdata["testCaseName"]):
@@ -42,27 +43,29 @@ class testinterface(unittest.TestCase):
                 url = testdata["url"]
                 headers = {"Content-Type":"application/json"}
                 data = json.loads(testdata["data"])
+                if testdata["url"]!="http://test.joinpay.co:8098/property/user/login/":
+                    token = self.login()
+                    headers = {"Content-Type": "application/json",
+                               "X-Authorization-Token": token}
                 if testdata["data"]!="null":
                     r = requests.post(url=url, json=data, headers=headers)
                 else:
-                    token = self.login()
-                    headers = {"Content-Type": "application/json",
-                               "X-Authorization-Token":token}
                     r = requests.post(url=url, headers=headers)
+                testdata["response"]=r.json()
+                print(testdata["response"])
+                if r.status_code==200:
+                    num_pass=num_pass+1
+                    testdata["test_result"]="PASS"
+                else:
+                    print("FAIL")
+                    testdata["test_result"]="FAIL"
+                self.report(testdata,val)
+                val += 1
                 self.assertIn(r.json()["errmsg"],testdata["errmsg"])
-                #testdata["response"]=r.json()
-                # if r.status_code==200:
-                #     num_pass=num_pass+1
-                #     testdata["test_result"]="PASS"
-                # else:
-                #     print("FAIL")
-                #     testdata["test_result"]="FAIL"
-                # print(testdata)
-                self.report(testdata)
         end_time = datetime.datetime.now()
         total_time = (end_time - start_time).seconds
         pass_rate=num_pass/num_total
-        #self.send_mail()
+        self.send_mail()
 
     #登录接口取token
     def login(self):
@@ -74,10 +77,8 @@ class testinterface(unittest.TestCase):
         return r.json()["result"]["token"]
 
 
-
     #测试结果写入excel
-    def report(self,data):
-        val=1
+    def report(self,data,val):
         for key, value in data.items():
             if key == "testCaseName":
                 worksheet.write(val, 0, value)
@@ -88,13 +89,12 @@ class testinterface(unittest.TestCase):
             elif key == "data":
                 worksheet.write(val, 3, value)
             elif key == "response":
-                worksheet.write(val, 4, value)
+                worksheet.write(val, 4, str(value))
             elif key == "test_result":
                 worksheet.write(val, 5, value)
             else:
                 pass
-        val += 1
-        workbook.save('OK.xlsx')
+        workbook.save('testReport.xlsx')
 
     #邮件发送测试报告
     def send_mail(self):
@@ -112,7 +112,7 @@ class testinterface(unittest.TestCase):
 
         message.attach(
             MIMEText('本次共测试' + str(num_total) + '个用例，'\
-                    '通过率为' + str(pass_rate) + ','\
+                    '通过率为' +'%.2f%%' % (pass_rate * 100) + ','\
                     '耗时' + str(total_time) + '秒，详细请见附件。', 'plain', 'utf-8'))
 
         att1 = MIMEApplication(open("testReport.xlsx", 'rb').read())
