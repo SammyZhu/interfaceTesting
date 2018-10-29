@@ -54,7 +54,7 @@ class testinterface(unittest.TestCase):
                 testdata["response"]=r.json()
                 print(testdata["response"])
                 if r.status_code==200:
-                    num_pass=num_pass+1
+                    num_pass += 1
                     testdata["test_result"]="PASS"
                 else:
                     print("FAIL")
