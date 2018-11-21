@@ -4,10 +4,10 @@ from email.utils import formataddr
 from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 
-def send_mail(self):
+def send_mail(self,num_total,total_time,pass_rate):
     mail_host = "smtp.mxhichina.com"  # 设置服务器
     mail_user = "zhuxinyi@joinpay.cn"  # 用户名
-    mail_pass = "Qdv1Bji3"
+    mail_pass = "xxxx"
 
     sender = 'zhuxinyi@joinpay.cn'
     receiver = 'zhuxinyi@joinpay.cn'
