@@ -1,0 +1,59 @@
+import requests
+import hashlib
+import time
+import base64
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
+#pip3 install Crypto和pycryptodome,Python36/Lib/site-package/ctypto修改为Crypto
+
+#sha256加密
+def sha256encode(str):
+    sha256 = hashlib.sha256()
+    sha256.update(str.encode('utf-8'))
+    res = sha256.hexdigest()
+    return res
+
+#RSA加密
+def RSAencode(pwd,pemFile):
+    data=sha256encode(pwd)#密码加密
+    timestamp=int(round(time.time()))#时间戳
+    message="10"+"92653589"+str(timestamp)+data#拼接
+    #RSA加密
+    with open(pemFile, 'rb') as f:
+        key = f.read()
+        rsakey = RSA.importKey(key)  # 导入读取到的公钥
+        cipher = Cipher_pkcs1_v1_5.new(rsakey)  # 生成对象
+        cipher_text = base64.b64encode(cipher.encrypt(message.encode(encoding="utf-8")))
+        return cipher_text.decode('utf-8')
+
+def loginBoss():
+    username="admin"
+    pwd="1234qwer"
+    url="http://www.test.com"
+    pemFile='public1.pem'
+    password=RSAencode(pwd,pemFile)
+    data={"password":password,
+          "username":username}
+    headers={"Content-Type":"application/x-www-form-urlencoded"}
+    r=requests.post(url=url,headers=headers,data=data)
+    print("运营后台登录成功")
+    return r.cookies
+
+
+def loginPortal():
+    username="ayzgts84056@chacuo.net"
+    pwd="1234qwer@"
+    url="http://test.com/login"
+    pemFile='public.pem'
+    password=RSAencode(pwd,pemFile)
+    data={"password":password,
+          "username":username}
+    headers={"Content-Type":"application/json"}
+    r=requests.post(url=url,headers=headers,json=data)
+    print("商户后台登录成功")
+    return r.json()["data"]["access_token"]
+
+
+if __name__=="__main__":
+    loginPortal()
+    loginBoss()
