@@ -12,7 +12,7 @@ from urllib import parse
 
 # 请求公钥
 def request_pubic():
-    url = 'http://hokajp.dev.dexpo.deckers.com/mvc/encryption/key/public'
+    url = 'xxx'
     r = requests.get(url=url)
     return r.json()['publicKey']
 
@@ -46,8 +46,8 @@ def RSAencode(pwd):
 
 
 def login():
-    username = "admin"
-    pwd = "deckers"
+    username = "xxx"
+    pwd = "xxx"
     url = "https://hokajp.dev.dexpo.deckers.com/cxf/home/login"
     password = RSAencode(pwd)
     print(password)
